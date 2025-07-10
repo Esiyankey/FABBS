@@ -1,36 +1,116 @@
 "use client"
-
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import Image from "next/image"
 
 export default function Home() {
+
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-stone-50">
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div className="text-sm tracking-widest text-stone-600">FINE VISUAL STORYTELLING COMPANY</div>
-            <div className="flex items-center space-x-8">
-              <a href="#about" className="text-sm tracking-wide text-stone-600 hover:text-stone-800">
-                ABOUT
-              </a>
-              <a href="#portfolio" className="text-sm tracking-wide text-stone-600 hover:text-stone-800">
-                PORTFOLIO
-              </a>
-              <div className="text-2xl font-serif tracking-wider">FAABS</div>
-              <a href="#services" className="text-sm tracking-wide text-stone-600 hover:text-stone-800">
-                SERVICES
-              </a>
-              <a href="#contact" className="text-sm tracking-wide text-stone-600 hover:text-stone-800">
-                CONTACT
-              </a>
-            </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center">
+          <div className="text-sm tracking-widest text-stone-600">
+            FINE VISUAL STORYTELLING COMPANY
+          </div>
+
+          {/* Hamburger Toggle */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="text-stone-600 hover:text-stone-800 focus:outline-none"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                {isOpen ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                )}
+              </svg>
+            </button>
+          </div>
+
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center space-x-8">
+            <a
+              href="#about"
+              className="text-sm tracking-wide text-stone-600 hover:text-stone-800"
+            >
+              ABOUT
+            </a>
+            <a
+              href="#portfolio"
+              className="text-sm tracking-wide text-stone-600 hover:text-stone-800"
+            >
+              PORTFOLIO
+            </a>
+            <div className="text-2xl font-serif tracking-wider">FAABS</div>
+            <a
+              href="#services"
+              className="text-sm tracking-wide text-stone-600 hover:text-stone-800"
+            >
+              SERVICES
+            </a>
+            <a
+              href="#contact"
+              className="text-sm tracking-wide text-stone-600 hover:text-stone-800"
+            >
+              CONTACT
+            </a>
           </div>
         </div>
-      </nav>
+
+        {/* Mobile Menu */}
+        {isOpen && (
+          <div className="md:hidden mt-4 flex flex-col space-y-4 text-center">
+            <a
+              href="#about"
+              className="text-sm tracking-wide text-stone-600 hover:text-stone-800"
+            >
+              ABOUT
+            </a>
+            <a
+              href="#portfolio"
+              className="text-sm tracking-wide text-stone-600 hover:text-stone-800"
+            >
+              PORTFOLIO
+            </a>
+            <a
+              href="#services"
+              className="text-sm tracking-wide text-stone-600 hover:text-stone-800"
+            >
+              SERVICES
+            </a>
+            <a
+              href="#contact"
+              className="text-sm tracking-wide text-stone-600 hover:text-stone-800"
+            >
+              CONTACT
+            </a>
+          </div>
+        )}
+      </div>
+    </nav>
 
       {/* Hero Section */}
       <section className="relative h-screen">
