@@ -1,146 +1,15 @@
 "use client";
-import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
     <div className="min-h-screen bg-stone-50">
       {/* Navigation */}
-      <nav className="fixed py-4 md:py-0 top-0 w-full bg-white/95 backdrop-blur-sm z-50 ">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            {/* Show logo on mobile, text on desktop */}
-            <div className="md:hidden">
-              <Image
-              src="/images/fabbs_logo.png"
-              alt="logo here"
-              width={100}
-              height={80}
-              />
-            </div>
-            <div className="hidden md:block text-sm tracking-widest text-stone-600">
-              FINE VISUAL STORYTELLING COMPANY
-            </div>
-
-            {/* Hamburger Toggle */}
-            <div className="md:hidden">
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="text-stone-600 hover:text-stone-800 focus:outline-none mr-2"
-              >
-                <svg
-                  className="h-8 w-8"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  {isOpen ? (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  ) : (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  )}
-                </svg>
-              </button>
-            </div>
-
-            {/* Desktop Menu */}
-            <div className="hidden md:flex items-center space-x-8">
-              <a
-                href="#portfolio"
-                className="text-sm tracking-wide text-stone-600 hover:text-stone-800"
-              >
-                PORTFOLIO
-              </a>
-              <Image
-                src="/images/fabbs_logo.png"
-                alt="logo here"
-                width={100}
-                height={80}
-              />
-              <a className="text-sm tracking-wide text-stone-600 hover:text-stone-800">
-                <button
-                  onClick={() => {
-                    const el = document.getElementById("services");
-                    if (el) {
-                      el.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
-                >
-                  SERVICES
-                </button>
-              </a>
-              <a
-                className="text-sm tracking-wide text-stone-600 hover:text-stone-800"
-              >
-                <button
-                  onClick={() => {
-                    const el = document.getElementById("contact");
-                    if (el) {
-                      el.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
-                >
-                  CONTACT
-                </button>
-              </a>
-            </div>
-          </div>
-
-          {/* Mobile Menu */}
-          {isOpen && (
-            <div className="md:hidden mt-4 flex flex-col space-y-4 text-center">
-              <a
-                href="#portfolio"
-                className="text-sm tracking-wide text-stone-600 hover:text-stone-800"
-              >
-                PORTFOLIO
-              </a>
-              <a className="text-sm tracking-wide text-stone-600 hover:text-stone-800">
-                <button
-                  onClick={() => {
-                    const el = document.getElementById("services");
-                    if (el) {
-                      el.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
-                >
-                  SERVICES
-                </button>
-              </a>
-              <a
-                
-                className="text-sm tracking-wide text-stone-600 hover:text-stone-800"
-              >
-                <button
-                  onClick={() => {
-                    const el = document.getElementById("contact");
-                    if (el) {
-                      el.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
-                >
-                  CONTACT
-                </button>
-              </a>
-            </div>
-          )}
-        </div>
-      </nav>
 
       {/* Hero Section */}
       <section className="relative h-screen">
@@ -255,13 +124,15 @@ export default function Home() {
             {/* Large image left */}
             <div className="col-span-12 md:col-span-6 lg:col-span-4">
               <div className="relative h-96">
-                <Image
-                  src="/images/wedding-photo1.jpg"
-                  alt="Wedding Photography"
-                  width={400}
-                  height={600}
-                  className="w-full h-full object-cover"
-                />
+                <Link href={`/servicePhotos/wedding`}>
+                  <Image
+                    src="/images/wedding-photo1.jpg"
+                    alt="Wedding Photography"
+                    width={400}
+                    height={600}
+                    className="w-full h-full object-cover"
+                  />
+                </Link>
                 <div className="absolute bottom-4 left-4 bg-white/90 px-4 py-2">
                   <p className="text-sm tracking-wide text-stone-800">
                     WEDDING PHOTOGRAPHY
@@ -274,13 +145,15 @@ export default function Home() {
             <div className="col-span-12 md:col-span-6 lg:col-span-4">
               <div className="space-y-6">
                 <div className="relative h-44">
-                  <Image
-                    src="/images/event-coverage.jpg"
-                    alt="Event Coverage"
-                    width={400}
-                    height={300}
-                    className="w-full h-full object-cover"
-                  />
+                  <Link href={`/services/events-coverag`}>
+                    <Image
+                      src="/images/event-coverage.jpg"
+                      alt="Event Coverage"
+                      width={400}
+                      height={300}
+                      className="w-full h-full object-cover"
+                    />
+                  </Link>
                   <div className="absolute bottom-4 left-4 bg-white/90 px-4 py-2">
                     <p className="text-sm tracking-wide text-stone-800">
                       EVENT COVERAGE
@@ -288,13 +161,15 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="relative h-44">
-                  <Image
-                    src="/images/portrait.jpg"
-                    alt="Portrait Sessions"
-                    width={400}
-                    height={300}
-                    className="w-full h-full object-cover"
-                  />
+                  <Link href={`/servicePhotos/portrait`}>
+                    <Image
+                      src="/images/portrait.jpg"
+                      alt="Portrait Sessions"
+                      width={400}
+                      height={300}
+                      className="w-full h-full object-cover"
+                    />
+                  </Link>
                   <div className="absolute bottom-4 left-4 bg-white/90 px-4 py-2">
                     <p className="text-sm tracking-wide text-stone-800">
                       PORTRAIT SESSIONS
@@ -307,13 +182,15 @@ export default function Home() {
             {/* Medium image right */}
             <div className="col-span-12 md:col-span-6 lg:col-span-4">
               <div className="relative h-96">
-                <Image
-                  src="/images/drone-footage.jpg"
-                  alt="Drone Footage"
-                  width={400}
-                  height={600}
-                  className="w-full h-full object-cover"
-                />
+                <Link href={`/servicePhotos/drone-footage`}>
+                  <Image
+                    src="/images/drone-footage.jpg"
+                    alt="Drone Footage"
+                    width={400}
+                    height={600}
+                    className="w-full h-full object-cover"
+                  />
+                </Link>
                 <div className="absolute bottom-4 right-4 bg-stone-800/90 px-4 py-2">
                   <p className="text-sm tracking-wide text-white">
                     DRONE FOOTAGE
@@ -470,20 +347,6 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-stone-100 py-12">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="text-2xl font-serif tracking-wider text-stone-800 mb-4">
-            FAABS PRODUCTION
-          </div>
-          <p className="text-sm tracking-wide text-stone-600 mb-6">
-            TELLING YOUR STORY IN FRAMES AND MOTION
-          </p>
-          <div className="w-16 h-px bg-stone-400 mx-auto mb-6"></div>
-          <p className="text-xs tracking-wide text-stone-500">
-            © 2024 FAABS PRODUCTION. ALL RIGHTS RESERVED.
-          </p>
-        </div>
-      </footer>
     </div>
   );
 }
