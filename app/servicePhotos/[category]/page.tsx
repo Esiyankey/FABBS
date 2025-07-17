@@ -24,18 +24,21 @@ export default function Component() {
 
   return (
     <>
-      <div className=" bg-gray-50 ">
-        <div className="text-center mt-24 pt-4">
-          <Link href="/" className="relative left-0">
-            <div className="flex items-center justify-center">
-              <ArrowLeft />
-              Back to Home
-            </div>
-          </Link>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Grid Lens <br /> Photography
+      {/* Header Section */}
+
+      <div className=" bg-gray-50 pt-28 ">
+        <Link href="/" >
+          <button className="flex items-center  ml-4 my-4 text-gray-600 hover:text-gray-800 ">
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            Back to Home
+          </button>
+        </Link>
+
+        <div className="text-center ">
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">
+            Grid Lens  Photography
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl px-4 mx-auto">
+          <p className="text-base md:text-lg text-gray-600 sm:max-w-3xl  px-4 mx-auto">
             Capturing lifes most precious moments through the lens of creativity
             and passion.
           </p>
