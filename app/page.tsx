@@ -8,7 +8,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-stone-50 overflow-x-hidden">
       {/* Navigation */}
 
       {/* Hero Section */}
@@ -71,7 +71,7 @@ export default function Home() {
                 <div className="w-12 h-px bg-stone-400"></div>
               </div>
             </div>
-            <div className="col-span-12 lg:col-span-7">
+            <div className="col-span-12 lg:col-span-7 ">
               <div className="relative">
                 <Image
                   src="/images/photography.jpg"
@@ -274,10 +274,10 @@ export default function Home() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-20 bg-white overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-12 gap-12">
-            <div className="col-span-12 lg:col-span-6">
+      <section id="contact" className="py-20 bg-white">
+        <div className="max-w-3xl lg:max-w-6xl  mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div className=" lg:col-span-6">
               <h2 className="text-3xl font-light tracking-wide text-stone-800 mb-8">
                 OH, HELLO
               </h2>
@@ -311,7 +311,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="col-span-12 lg:col-span-6">
+            <div className=" lg:col-span-6">
               <form className="space-y-6">
                 <div>
                   <Input
