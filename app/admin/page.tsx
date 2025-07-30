@@ -4,15 +4,15 @@ import type React from "react";
 
 import { useState, useRef } from "react";
 import {
-  Upload,
+  // Upload,
   Search,
   Plus,
   Trash2,
-  Eye,
+  // Eye,
   Download,
   HelpCircle,
 } from "lucide-react";
-import Image from "next/image";
+// import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,32 +33,36 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
+// import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuLabel,
+//   DropdownMenuSeparator,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
 import {
   SidebarProvider,
   SidebarTrigger,
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "./components/app-sidebar";
+import { ref, uploadBytes } from "firebase/storage";
+import { storage } from "@/lib/firebase";
+import { getDownloadURL } from "firebase/storage";
+import { addDoc, collection } from "firebase/firestore";
+import { firestore } from "@/lib/firebase";
 
-interface Photo {
-  id: string;
- 
-  category: string;
-  url: string;
-  uploadDate: string;
-  size: string;
+// interface Photo {
+//   id: string;
 
-}
+//   category: string;
+//   url: string;
+//   uploadDate: string;
+//   size: string;
+// }
 
 const categories = [
   "portrait",
@@ -68,126 +72,66 @@ const categories = [
 ];
 
 export default function AdminDashboard() {
-  const [photos, setPhotos] = useState<Photo[]>([
-    {
-      id: "PHT001",
-      category: "portrait",
-      url: "/placeholder.svg?height=300&width=400",
-      uploadDate: "2024-01-15",
-      size: "2.4 MB",
-      
-    },
-    {
-      id: "PHT002",
-    
-      category: "funeral coverage",
-      url: "/placeholder.svg?height=300&width=400",
-      uploadDate: "2024-01-14",
-      size: "1.8 MB",
-    },
-    {
-      id: "PHT003",
-    
-      category: "event coverage",
-      url: "/placeholder.svg?height=300&width=400",
-      uploadDate: "2024-01-13",
-      size: "3.1 MB",
-    
-    },
-    {
-      id: "PHT004",
-     
-      category: "wedding",
-      url: "/placeholder.svg?height=300&width=400",
-      uploadDate: "2024-01-12",
-      size: "2.2 MB",
-  
-    },
-    {
-      id: "PHT005",
-    
-      category: "portrait",
-      url: "/placeholder.svg?height=300&width=400",
-      uploadDate: "2024-01-11",
-      size: "1.9 MB",
-    
-    },
-  ]);
-
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  // const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
-  const [uploadForm, setUploadForm] = useState({
-    name: "",
-    category: "",
-    description: "",
-  });
+  const [category, setCategory] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const filteredPhotos = photos.filter((photo) => {
-    const matchesSearch =
-     
-      photo.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "all" || photo.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const handleUpload = async () => {
+    if (!file || !category)
+      return alert("Both category and image are required!");
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      const newPhoto: Photo = {
-        id: `PHT${String(photos.length + 1).padStart(3, "0")}`,
-      
-        category: uploadForm.category,
-        url: URL.createObjectURL(file),
-        uploadDate: new Date().toISOString().split("T")[0],
-        size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-       
-      };
-      setPhotos([newPhoto, ...photos]);
-      setUploadForm({ name: "", category: "", description: "" });
-      setIsUploadOpen(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+    setLoading(true);
+    try {
+      const storageRef = ref(storage, `images/${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      await addDoc(collection(firestore, "uploads"), {
+        category,
+        imageUrl: downloadURL,
+        timestamp: new Date(),
+      });
+
+      alert("Upload successful!");
+      setFile(null);
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Something went wrong.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDeleteSelected = () => {
-    setPhotos(photos.filter((photo) => !selectedPhotos.includes(photo.id)));
-    setSelectedPhotos([]);
-  };
+  const handleDeleteSelected = () => {};
 
-  const handleSelectPhoto = (photoId: string) => {
-    setSelectedPhotos((prev) =>
-      prev.includes(photoId)
-        ? prev.filter((id) => id !== photoId)
-        : [...prev, photoId]
-    );
-  };
+  // const handleSelectPhoto = (photoId: string) => {
+  //   setSelectedPhotos((prev) =>
+  //     prev.includes(photoId)
+  //       ? prev.filter((id) => id !== photoId)
+  //       : [...prev, photoId]
+  //   );
+  // };
 
-  const handleSelectAll = () => {
-    if (selectedPhotos.length === filteredPhotos.length) {
-      setSelectedPhotos([]);
-    } else {
-      setSelectedPhotos(filteredPhotos.map((photo) => photo.id));
-    }
-  };
+  // const handleSelectAll = () => {};
 
-  const handleCategorySelect = (category: string) => {
-    setSelectedCategory(category);
-  };
+  // const handleCategorySelect = (category: string) => {
+  //   setSelectedCategory(category);
+  // };
 
   return (
     <SidebarProvider defaultOpen={true}>
       {/* Sidebar */}
       <AppSidebar
-        photos={photos}
-        selectedCategory={selectedCategory}
-        onCategorySelect={handleCategorySelect}
+        photos={[]}
+        selectedCategory={"all"}
+        onCategorySelect={() => {}}
       />
 
       {/* Main Content */}
@@ -202,7 +146,7 @@ export default function AdminDashboard() {
                   FABBS Dashboard
                 </h1>
                 <Badge variant="secondary" className="text-sm">
-                  {photos.length} Photos
+                  Photos
                 </Badge>
               </div>
 
@@ -248,29 +192,13 @@ export default function AdminDashboard() {
                       <DialogHeader>
                         <DialogTitle>Upload New Photo</DialogTitle>
                       </DialogHeader>
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="photo-name">Photo Name</Label>
-                          <Input
-                            id="photo-name"
-                            value={uploadForm.name}
-                            onChange={(e) =>
-                              setUploadForm({
-                                ...uploadForm,
-                                name: e.target.value,
-                              })
-                            }
-                            placeholder="Enter photo name"
-                          />
-                        </div>
 
+                      <div className="space-y-4">
                         <div>
                           <Label htmlFor="photo-category">Category</Label>
                           <Select
-                            value={uploadForm.category}
-                            onValueChange={(value) =>
-                              setUploadForm({ ...uploadForm, category: value })
-                            }
+                            value={category}
+                            onValueChange={(value) => setCategory(value)}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select category" />
@@ -286,33 +214,24 @@ export default function AdminDashboard() {
                         </div>
 
                         <div>
-                          <Label htmlFor="photo-description">
-                            Description (Optional)
-                          </Label>
-                          <Textarea
-                            id="photo-description"
-                            value={uploadForm.description}
-                            onChange={(e) =>
-                              setUploadForm({
-                                ...uploadForm,
-                                description: e.target.value,
-                              })
-                            }
-                            placeholder="Enter photo description"
-                            rows={3}
-                          />
-                        </div>
-
-                        <div>
                           <Label htmlFor="photo-file">Select Photo</Label>
                           <Input
                             id="photo-file"
                             type="file"
                             accept="image/*"
-                            onChange={handleFileUpload}
+                            onChange={(e) =>
+                              setFile(e.target.files?.[0] || null)
+                            }
                             ref={fileInputRef}
                           />
                         </div>
+                        <Button
+                          onClick={handleUpload}
+                          disabled={!file || !category || loading}
+                          className="w-full"
+                        >
+                          {loading ? "Uploading..." : "Upload Photo"}
+                        </Button>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -360,11 +279,11 @@ export default function AdminDashboard() {
                         <tr>
                           <th className="w-12 p-4">
                             <Checkbox
-                              checked={
-                                filteredPhotos.length > 0 &&
-                                selectedPhotos.length === filteredPhotos.length
-                              }
-                              onCheckedChange={handleSelectAll}
+                            // checked={
+                            //   filteredPhotos.length > 0 &&
+                            //   selectedPhotos.length === filteredPhotos.length
+                            // }
+                            // onCheckedChange={handleSelectAll}
                             />
                           </th>
                           <th className="text-left p-4 font-semibold text-gray-900">
@@ -397,7 +316,7 @@ export default function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredPhotos.map((photo, index) => (
+                        {/* {filteredPhotos.map((photo, index) => (
                           <tr
                             key={photo.id}
                             className={`border-b hover:bg-gray-50 ${
@@ -439,7 +358,7 @@ export default function AdminDashboard() {
                                 {photo.category}
                               </Badge>
                             </td>
-                            
+
                             <td className="p-4">
                               <span className="text-sm text-gray-600">
                                 {photo.uploadDate}
@@ -572,12 +491,12 @@ export default function AdminDashboard() {
                               </div>
                             </td>
                           </tr>
-                        ))}
+                        ))} */}
                       </tbody>
                     </table>
                   </div>
 
-                  {filteredPhotos.length === 0 && (
+                  {/* {filteredPhotos.length === 0 && (
                     <div className="text-center py-12">
                       <Upload className="mx-auto h-12 w-12 text-gray-400" />
                       <h3 className="mt-2 text-sm font-semibold text-gray-900">
@@ -596,14 +515,15 @@ export default function AdminDashboard() {
                         Upload First Photo
                       </Button>
                     </div>
-                  )}
+                  )} */}
                 </CardContent>
               </Card>
 
               {/* Table Footer with Pagination Info */}
               <div className="flex items-center justify-between px-2">
                 <div className="text-sm text-gray-700">
-                  Showing {filteredPhotos.length} of {photos.length} photos
+                  {/* Showing {filteredPhotos.length} of {uploadedPhotos.length}{" "}
+                  photos */}
                 </div>
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" disabled>
