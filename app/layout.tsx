@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
+import { PhotoProvider } from "./context/photoDataContext";
 import "./globals.css";
 // import { Montserrat } from "next/font/google";
-import { Navbar } from "./components/features/navbar";
-import { Footer } from "./components/features/footer";
-
 
 
 // const montserrat = Montserrat({
@@ -25,9 +23,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Navbar/>
-        {children}
-        <Footer/>
+        <PhotoProvider>
+         
+          {children}
+      
+        </PhotoProvider>
       </body>
     </html>
   );

@@ -1,19 +1,8 @@
 "use client";
 
-import type React from "react";
-
 import { useState, useRef } from "react";
-import {
-  // Upload,
-  Search,
-  Plus,
-  Trash2,
-  // Eye,
-  Download,
-  HelpCircle,
-} from "lucide-react";
-// import Image from "next/image";
-
+import { Search, Plus, Trash2, Download, HelpCircle } from "lucide-react";
+import { usePhotos } from "../context/photoDataContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,36 +22,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-// import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-// import {
-//   DropdownMenu,
-//   DropdownMenuContent,
-//   DropdownMenuItem,
-//   DropdownMenuLabel,
-//   DropdownMenuSeparator,
-//   DropdownMenuTrigger,
-// } from "@/components/ui/dropdown-menu";
 import {
   SidebarProvider,
   SidebarTrigger,
   SidebarInset,
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "./components/app-sidebar";
-import { ref, uploadBytes } from "firebase/storage";
-import { storage } from "@/lib/firebase";
-import { getDownloadURL } from "firebase/storage";
-import { addDoc, collection } from "firebase/firestore";
-import { firestore } from "@/lib/firebase";
-
-// interface Photo {
-//   id: string;
-
-//   category: string;
-//   url: string;
-//   uploadDate: string;
-//   size: string;
-// }
+import Image from "next/image";
 
 const categories = [
   "portrait",
@@ -73,68 +41,53 @@ const categories = [
 
 export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
-  // const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+
   const [category, setCategory] = useState("");
-  const [loading, setLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [alt, setAlt] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { photos, fetchPhotos } = usePhotos();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const handleDeleteSelected = () => {};
+
   const handleUpload = async () => {
-    if (!file || !category)
-      return alert("Both category and image are required!");
+    if (!file || !category) return alert("Please select a file and category");
 
     setLoading(true);
-    try {
-      const storageRef = ref(storage, `images/${file.name}`);
-      const snapshot = await uploadBytes(storageRef, file);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("category", category);
+    formData.append("alt", alt);
 
-      const downloadURL = await getDownloadURL(snapshot.ref);
+    const res = await fetch("/api/uploads", {
+      method: "POST",
+      body: formData,
+    });
 
-      await addDoc(collection(firestore, "uploads"), {
-        category,
-        imageUrl: downloadURL,
-        timestamp: new Date(),
-      });
+    const data = await res.json();
+    setLoading(false);
 
-      alert("Upload successful!");
+    if (res.ok) {
+      alert("Uploaded successfully!");
+      setIsUploadOpen(false);
       setFile(null);
-    } catch (error) {
-      console.error("Upload error:", error);
-      alert("Something went wrong.");
-    } finally {
-      setLoading(false);
+      setCategory("");
+      setAlt("");
+      fetchPhotos();
+    } else {
+      alert(`Error: ${data.error}`);
     }
   };
 
-  const handleDeleteSelected = () => {};
-
-  // const handleSelectPhoto = (photoId: string) => {
-  //   setSelectedPhotos((prev) =>
-  //     prev.includes(photoId)
-  //       ? prev.filter((id) => id !== photoId)
-  //       : [...prev, photoId]
-  //   );
-  // };
-
-  // const handleSelectAll = () => {};
-
-  // const handleCategorySelect = (category: string) => {
-  //   setSelectedCategory(category);
-  // };
-
   return (
     <SidebarProvider defaultOpen={true}>
-      {/* Sidebar */}
-      <AppSidebar
-        photos={[]}
-        selectedCategory={"all"}
-        onCategorySelect={() => {}}
-      />
+      <AppSidebar selectedCategory={"all"} onCategorySelect={() => {}} />
 
-      {/* Main Content */}
       <SidebarInset>
         <div className="min-h-screen bg-gray-50">
           {/* Header */}
@@ -163,16 +116,14 @@ export default function AdminDashboard() {
             {/* Controls */}
             <div className="mb-6 space-y-4">
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      placeholder="Search photos by name or ID..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 w-64"
-                    />
-                  </div>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search photos..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 w-64"
+                  />
                 </div>
 
                 <div className="flex gap-2">
@@ -188,14 +139,19 @@ export default function AdminDashboard() {
                         Upload Photo
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
+                    <DialogContent
+                      className="sm:max-w-md"
+                      aria-describedby={undefined}
+                    >
                       <DialogHeader>
                         <DialogTitle>Upload New Photo</DialogTitle>
                       </DialogHeader>
 
                       <div className="space-y-4">
                         <div>
-                          <Label htmlFor="photo-category">Category</Label>
+                          <Label htmlFor="photo-category" className="mb-2">
+                            Category
+                          </Label>
                           <Select
                             value={category}
                             onValueChange={(value) => setCategory(value)}
@@ -204,9 +160,9 @@ export default function AdminDashboard() {
                               <SelectValue placeholder="Select category" />
                             </SelectTrigger>
                             <SelectContent>
-                              {categories.map((category) => (
-                                <SelectItem key={category} value={category}>
-                                  {category}
+                              {categories.map((c) => (
+                                <SelectItem key={c} value={c}>
+                                  {c}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -214,7 +170,9 @@ export default function AdminDashboard() {
                         </div>
 
                         <div>
-                          <Label htmlFor="photo-file">Select Photo</Label>
+                          <Label htmlFor="photo-file" className="mb-2">
+                            Select Photo
+                          </Label>
                           <Input
                             id="photo-file"
                             type="file"
@@ -225,12 +183,25 @@ export default function AdminDashboard() {
                             ref={fileInputRef}
                           />
                         </div>
+
+                        <div>
+                          <Label htmlFor="alt" className="mb-2">
+                            Alt Text (for accessibility)
+                          </Label>
+                          <Textarea
+                            id="alt"
+                            placeholder="Add an alt..."
+                            value={alt}
+                            onChange={(e) => setAlt(e.target.value)}
+                          />
+                        </div>
+
                         <Button
-                          onClick={handleUpload}
                           disabled={!file || !category || loading}
+                          onClick={handleUpload}
                           className="w-full"
                         >
-                          {loading ? "Uploading..." : "Upload Photo"}
+                          {loading ? "Uploading..." : "Upload"}
                         </Button>
                       </div>
                     </DialogContent>
@@ -241,7 +212,6 @@ export default function AdminDashboard() {
 
             {/* Photos Table */}
             <div className="space-y-4">
-              {/* Bulk Actions */}
               {selectedPhotos.length > 0 && (
                 <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <span className="text-sm font-medium text-blue-900">
@@ -270,7 +240,6 @@ export default function AdminDashboard() {
                 </div>
               )}
 
-              {/* Table */}
               <Card>
                 <CardContent className="p-0">
                   <div className="overflow-x-auto">
@@ -278,28 +247,17 @@ export default function AdminDashboard() {
                       <thead className="bg-gray-50 border-b">
                         <tr>
                           <th className="w-12 p-4">
-                            <Checkbox
-                            // checked={
-                            //   filteredPhotos.length > 0 &&
-                            //   selectedPhotos.length === filteredPhotos.length
-                            // }
-                            // onCheckedChange={handleSelectAll}
-                            />
+                            <Checkbox />
                           </th>
                           <th className="text-left p-4 font-semibold text-gray-900">
                             Photo
                           </th>
-                          <th className="text-left p-4 font-semibold text-gray-900">
-                            ID
-                          </th>
-                          <th className="text-left p-4 font-semibold text-gray-900">
-                            Name
-                          </th>
+
                           <th className="text-left p-4 font-semibold text-gray-900">
                             Category
                           </th>
                           <th className="text-left p-4 font-semibold text-gray-900">
-                            Description
+                            Alt Text
                           </th>
                           <th className="text-left p-4 font-semibold text-gray-900">
                             Upload Date
@@ -307,233 +265,40 @@ export default function AdminDashboard() {
                           <th className="text-left p-4 font-semibold text-gray-900">
                             Size
                           </th>
-                          <th className="text-left p-4 font-semibold text-gray-900">
-                            Status
-                          </th>
-                          <th className="text-left p-4 font-semibold text-gray-900">
-                            Actions
-                          </th>
                         </tr>
                       </thead>
                       <tbody>
-                        {/* {filteredPhotos.map((photo, index) => (
-                          <tr
-                            key={photo.id}
-                            className={`border-b hover:bg-gray-50 ${
-                              index % 2 === 0 ? "bg-white" : "bg-gray-25"
-                            }`}
-                          >
+                        {photos.map((photo) => (
+                          <tr key={photo.id} className="border-b">
                             <td className="p-4">
-                              <Checkbox
-                                checked={selectedPhotos.includes(photo.id)}
-                                onCheckedChange={() =>
-                                  handleSelectPhoto(photo.id)
-                                }
+                              <input type="checkbox" />
+                            </td>
+                            <td className="p-4">
+                              <Image
+                                src={photo.src}
+                                alt={photo.alt || "Photo"}
+                                height={48}
+                                width={48}
+                                className=" object-cover rounded"
                               />
                             </td>
+                            <td className="p-4">{photo.category}</td>
+                            <td className="p-4">{photo.alt}</td>
                             <td className="p-4">
-                              <div className="relative w-16 h-12 rounded-md overflow-hidden bg-gray-100">
-                                <Image
-                                  src={photo.url || "/placeholder.svg"}
-                                  alt="Photo thumbnail"
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
+                              {new Date(photo.created_at).toLocaleDateString()}
                             </td>
                             <td className="p-4">
-                              <span className="font-mono text-sm font-medium text-blue-600">
-                                {photo.id}
-                              </span>
-                            </td>
-                            <td className="p-4">
-                              <div className="max-w-48">
-                                <span className="font-medium text-gray-900 truncate block">
-                                  photo
-                                </span>
-                              </div>
-                            </td>
-                            <td className="p-4">
-                              <Badge variant="secondary" className="text-xs">
-                                {photo.category}
-                              </Badge>
-                            </td>
-
-                            <td className="p-4">
-                              <span className="text-sm text-gray-600">
-                                {photo.uploadDate}
-                              </span>
-                            </td>
-                            <td className="p-4">
-                              <span className="text-sm text-gray-600">
-                                {photo.size}
-                              </span>
-                            </td>
-                            <td className="p-4">
-                              <Badge
-                                variant="outline"
-                                className="text-xs text-green-600 border-green-200"
-                              >
-                                Active
-                              </Badge>
-                            </td>
-                            <td className="p-4">
-                              <div className="flex items-center gap-2">
-                                <Dialog>
-                                  <DialogTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-8 w-8 p-0"
-                                    >
-                                      <Eye className="h-4 w-4" />
-                                    </Button>
-                                  </DialogTrigger>
-                                  <DialogContent className="max-w-4xl">
-                                    <DialogHeader>
-                                      <DialogTitle>{photo.name}</DialogTitle>
-                                    </DialogHeader>
-                                    <div className="space-y-4">
-                                      <div className="relative w-full h-96 rounded-lg overflow-hidden bg-gray-100">
-                                        <Image
-                                          src={photo.url || "/placeholder.svg"}
-                                          alt={photo.name}
-                                          fill
-                                          className="object-contain"
-                                        />
-                                      </div>
-                                      <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div>
-                                          <strong>ID:</strong> {photo.id}
-                                        </div>
-                                        <div>
-                                          <strong>Category:</strong>{" "}
-                                          {photo.category}
-                                        </div>
-                                        <div>
-                                          <strong>Upload Date:</strong>{" "}
-                                          {photo.uploadDate}
-                                        </div>
-                                        <div>
-                                          <strong>File Size:</strong>{" "}
-                                          {photo.size}
-                                        </div>
-                                      </div>
-                                      {photo.description && (
-                                        <div>
-                                          <strong>Description:</strong>
-                                          <p className="mt-1 text-gray-600">
-                                            {photo.description}
-                                          </p>
-                                        </div>
-                                      )}
-                                      <div className="flex gap-2 pt-4">
-                                        <Button variant="outline" size="sm">
-                                          <Download className="mr-2 h-4 w-4" />
-                                          Download Original
-                                        </Button>
-                                        <Button variant="outline" size="sm">
-                                          Copy Public URL
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </DialogContent>
-                                </Dialog>
-
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-8 w-8 p-0"
-                                    >
-                                      <span className="sr-only">Open menu</span>
-                                      <svg
-                                        className="h-4 w-4"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth={2}
-                                          d="M12 5v.01M12 12v.01M12 19v.01"
-                                        />
-                                      </svg>
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>
-                                      Actions
-                                    </DropdownMenuLabel>
-                                    <DropdownMenuItem>
-                                      <Eye className="mr-2 h-4 w-4" />
-                                      View Details
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                      <Download className="mr-2 h-4 w-4" />
-                                      Download
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                      Copy Public URL
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem>
-                                      Edit Details
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem className="text-red-600">
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      Delete
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
+                              {photo.size
+                                ? `${(photo.size / 1024).toFixed(2)} KB`
+                                : "—"}
                             </td>
                           </tr>
-                        ))} */}
+                        ))}
                       </tbody>
                     </table>
                   </div>
-
-                  {/* {filteredPhotos.length === 0 && (
-                    <div className="text-center py-12">
-                      <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                      <h3 className="mt-2 text-sm font-semibold text-gray-900">
-                        No photos found
-                      </h3>
-                      <p className="mt-1 text-sm text-gray-500">
-                        {searchTerm || selectedCategory !== "all"
-                          ? "Try adjusting your search or filter criteria."
-                          : "Get started by uploading your first photo."}
-                      </p>
-                      <Button
-                        className="mt-4"
-                        onClick={() => setIsUploadOpen(true)}
-                      >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Upload First Photo
-                      </Button>
-                    </div>
-                  )} */}
                 </CardContent>
               </Card>
-
-              {/* Table Footer with Pagination Info */}
-              <div className="flex items-center justify-between px-2">
-                <div className="text-sm text-gray-700">
-                  {/* Showing {filteredPhotos.length} of {uploadedPhotos.length}{" "}
-                  photos */}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" disabled>
-                    Previous
-                  </Button>
-                  <Button variant="outline" size="sm" disabled>
-                    Next
-                  </Button>
-                </div>
-              </div>
             </div>
           </div>
         </div>
