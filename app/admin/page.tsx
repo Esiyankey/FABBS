@@ -195,7 +195,7 @@ export default function AdminDashboard() {
             </div>
           </header>
 
-          <div className="p-6">
+          <div className="">
             <div className="mb-6 space-y-4">
               <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                 <div className="flex gap-2">
