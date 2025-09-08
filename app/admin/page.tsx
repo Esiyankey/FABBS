@@ -347,10 +347,8 @@ import {
   Trash2,
   Download,
   HelpCircle,
-  Edit,
   Eye,
   Share2,
-  Heart,
   MoreHorizontal,
 } from "lucide-react";
 import { usePhotos } from "../context/photoDataContext";
@@ -733,22 +731,7 @@ export default function AdminDashboard() {
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  // onClick={() => handleEditPhoto(photo.id)}
-                                  className="h-8 w-8 p-0 text-emerald-600 hover:bg-emerald-50"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  // onClick={() => handleFavoritePhoto(photo.id)}
-                                  className="h-8 w-8 p-0 text-pink-600 hover:bg-pink-50"
-                                >
-                                  <Heart className="h-4 w-4" />
-                                </Button>
+
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button
